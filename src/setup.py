@@ -11,7 +11,8 @@ def create_app():
     from api.graphql import schema
     from api.rest import main
 
-    app.session = scoped_session(Session, scopefunc=_app_ctx_stack.__ident_func__)
+    db_session = scoped_session(Session, scopefunc=_app_ctx_stack.__ident_func__)
+    app.session = db_session
     app.register_blueprint(main)
     app.add_url_rule(
         "/graphql",
@@ -19,6 +20,7 @@ def create_app():
             "graphql",
             schema=schema,
             graphiql=True,
+            context_value={"session": db_session},
         ),
     )
     return app

@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from db import SQLALCHEMY_DATABASE_URL, Base
+from models import Restaurant
 from setup import create_app
 
 
@@ -34,3 +35,14 @@ def db_session(db_connection):
 
     transaction.rollback()
     db_session.close()
+
+
+@pytest.fixture
+def restaurant_factory(db_session):
+    def _restaurant_factory(**kwargs):
+        restaurant = Restaurant(**kwargs)
+        db_session.add(restaurant)
+        db_session.flush()
+        return restaurant
+
+    yield _restaurant_factory
