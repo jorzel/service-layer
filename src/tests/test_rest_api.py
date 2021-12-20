@@ -1,10 +1,12 @@
-from setup import create_app
+import pytest
 
 
-def test_up_endpoint():
-    flask_app = create_app()
+@pytest.fixture
+def test_client(app):
+    return app.test_client()
 
-    with flask_app.test_client() as test_client:
-        response = test_client.get("/")
-        assert response.status_code == 200
-        assert response.json == {"up": True}
+
+def test_up_endpoint(test_client):
+    response = test_client.get("/")
+    assert response.status_code == 200
+    assert response.json == {"up": True}
