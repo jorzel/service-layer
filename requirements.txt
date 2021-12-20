@@ -1,0 +1,2 @@
+-r dev_requirements.txt
+flask==2.0.2
