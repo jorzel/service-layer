@@ -2,3 +2,4 @@
 flask==2.0.2
 Flask-GraphQL==2.0.1
 graphene<3.0
+sqlalchemy==1.4.28
