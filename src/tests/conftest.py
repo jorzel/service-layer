@@ -7,11 +7,6 @@ from models import Restaurant
 from setup import create_app
 
 
-@pytest.fixture
-def app():
-    return create_app()
-
-
 @pytest.fixture(scope="session")
 def db_connection():
     engine = create_engine(SQLALCHEMY_DATABASE_URL)
@@ -35,6 +30,13 @@ def db_session(db_connection):
 
     transaction.rollback()
     db_session.close()
+
+
+@pytest.fixture
+def app(db_session):
+    app = create_app()
+    app.session = db_session
+    return app
 
 
 @pytest.fixture
