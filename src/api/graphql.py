@@ -35,24 +35,23 @@ class TableBookingConnection(graphene.Connection):
         node = TableBookingNode
 
 
-class BookRestaurantTable(graphene.relay.ClientIDMutation):
-    class Input:
+class BookRestaurantTable(graphene.Mutation):
+    class Arguments:
         restaurant_gid = graphene.ID(required=True)
         persons = graphene.Int(required=True)
         user_email = graphene.String(required=True)
 
     is_booked = graphene.Boolean()
 
-    @classmethod
-    def mutate_and_get_payload(cls, root, info, **input):
-        _, restaurant_id = from_global_id(input["restaurant_gid"])
+    def mutate(self, info, restaurant_gid: str, persons: int, user_email: str):
         session = info.context["session"]
-        user = session.query(User).filter_by(email=input["user_email"]).first()
+        _, restaurant_id = from_global_id(restaurant_gid)
+        user = session.query(User).filter_by(email=user_email).first()
         restaurant = session.query(Restaurant).get(restaurant_id)
-        table_booking = restaurant.book_table(input["persons"], user)
+        table_booking = restaurant.book_table(persons, user)
         session.add(table_booking)
         session.commit()
-        return cls(is_booked=True)
+        return BookRestaurantTable(is_booked=True)
 
 
 class Mutation(graphene.ObjectType):

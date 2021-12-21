@@ -63,7 +63,7 @@ def test_book_table_in_restaurant(
 
     query = """
         mutation m {
-             bookRestaurantTable (input: {restaurantGid: "%s", persons: %s, userEmail: "%s"}) {
+             bookRestaurantTable (restaurantGid: "%s", persons: %s, userEmail: "%s") {
                  isBooked
              }
         }
