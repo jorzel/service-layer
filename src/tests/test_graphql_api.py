@@ -26,7 +26,7 @@ def test_graphql_up(test_client):
 
 def test_resolve_restaurants(test_client, restaurant_factory, db_session):
     restaurant = restaurant_factory(name="taverna")
-    restaurant_gid = to_global_id("RestaurantNode", restaurant.name)
+    restaurant_gid = to_global_id("RestaurantNode", restaurant.id)
 
     query = """
         {

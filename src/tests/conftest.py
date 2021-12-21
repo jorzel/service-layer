@@ -2,13 +2,14 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from db import SQLALCHEMY_DATABASE_URL, Base
+from app import create_app
+from db import Base
 from models import Restaurant, Table, User
-from setup import create_app
 
 
 @pytest.fixture(scope="session")
 def db_connection():
+    SQLALCHEMY_DATABASE_URL = "sqlite:///"
     engine = create_engine(SQLALCHEMY_DATABASE_URL)
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)

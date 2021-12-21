@@ -20,7 +20,7 @@ def create_app():
             "graphql",
             schema=schema,
             graphiql=True,
-            context_value={"session": db_session},
+            get_context=lambda: {"session": db_session},
         ),
     )
     return app

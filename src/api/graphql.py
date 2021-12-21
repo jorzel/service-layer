@@ -67,9 +67,7 @@ class Query(graphene.ObjectType):
 
     def resolve_restaurants(root, info, **kwargs):
         session = info.context["session"]
-        return [
-            RestaurantNode(id=r.name, name=r.name) for r in session.query(Restaurant)
-        ]
+        return [RestaurantNode(id=r.id, name=r.name) for r in session.query(Restaurant)]
 
 
 schema = graphene.Schema(
