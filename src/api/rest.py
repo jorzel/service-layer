@@ -12,6 +12,7 @@ def restaurant_serializer(restaurant: Restaurant) -> Dict[str, Any]:
 
 
 @main.route("/")
+@main.route("/up")
 def up():
     return jsonify({"up": True})
 
