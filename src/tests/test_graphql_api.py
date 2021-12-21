@@ -63,17 +63,16 @@ def test_book_table_in_restaurant(
 
     query = """
         mutation m {
-             bookRestaurantTable (input: {restaurantGid: "%s", persons: %s}) {
+             bookRestaurantTable (input: {restaurantGid: "%s", persons: %s, userEmail: "%s"}) {
                  isBooked
              }
         }
     """ % (
         restaurant_gid,
         persons,
+        user.email,
     )
-    response = test_client.execute(
-        query, context_value={"session": db_session, "current_user": user}
-    )
+    response = test_client.execute(query, context_value={"session": db_session})
     expected = {"bookRestaurantTable": {"isBooked": True}}
 
     assert response.get("errors") is None

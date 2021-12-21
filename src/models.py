@@ -57,8 +57,8 @@ class TableBooking(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     booked_at = Column(DateTime, default=datetime.utcnow)
-    user_id = Column(ForeignKey("user.id"))
+    user_id = Column(ForeignKey("user.id"), nullable=False)
     user = relationship("User")
-    restaurant_id = Column(ForeignKey("restaurant.id"))
+    restaurant_id = Column(ForeignKey("restaurant.id"), nullable=False)
     restaurant = relationship("Restaurant")
     persons = Column(Integer, nullable=False, default=1)

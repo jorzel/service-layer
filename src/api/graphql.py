@@ -1,7 +1,7 @@
 import graphene
 from graphene.relay.node import from_global_id
 
-from models import Restaurant
+from models import Restaurant, User
 
 
 class UserNode(graphene.ObjectType):
@@ -39,6 +39,7 @@ class BookRestaurantTable(graphene.relay.ClientIDMutation):
     class Input:
         restaurant_gid = graphene.ID(required=True)
         persons = graphene.Int(required=True)
+        user_email = graphene.String(required=True)
 
     is_booked = graphene.Boolean()
 
@@ -46,9 +47,9 @@ class BookRestaurantTable(graphene.relay.ClientIDMutation):
     def mutate_and_get_payload(cls, root, info, **input):
         _, restaurant_id = from_global_id(input["restaurant_gid"])
         session = info.context["session"]
-        current_user = info.context["current_user"]
+        user = session.query(User).filter_by(email=input["user_email"]).first()
         restaurant = session.query(Restaurant).get(restaurant_id)
-        table_booking = restaurant.book_table(input["persons"], current_user)
+        table_booking = restaurant.book_table(input["persons"], user)
         session.add(table_booking)
         session.commit()
         return cls(is_booked=True)
