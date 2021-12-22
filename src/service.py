@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy.orm import Session
 
 from models import Restaurant, TableBooking, User
@@ -12,3 +14,15 @@ def book_restaurant_table(
     session.add(table_booking)
     session.commit()
     return table_booking
+
+
+def get_restaurants(
+    session: Session, search: Optional[str] = None, limit: Optional[int] = None
+):
+    filter_args = []
+    if search:
+        filter_args.append(Restaurant.name.ilike(f"%{search}%"))
+    query = session.query(Restaurant).filter(*filter_args)
+    if limit:
+        query = query.limit(limit)
+    return query

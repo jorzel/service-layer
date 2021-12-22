@@ -24,6 +24,16 @@ def test_get_restaurants(test_client, restaurant_factory, db_session):
     assert response.json == [{"name": restaurant.name, "id": restaurant.id}]
 
 
+def test_get_parametrized_restaurants(test_client, restaurant_factory, db_session):
+    restaurant = restaurant_factory(name="taverna")
+    _ = restaurant_factory(name="americano")
+
+    response = test_client.get("/restaurants?q=tav&limit=1")
+
+    assert response.status_code == 200
+    assert response.json == [{"name": restaurant.name, "id": restaurant.id}]
+
+
 def test_post_bookings(
     test_client, restaurant_factory, table_factory, user_factory, db_session
 ):

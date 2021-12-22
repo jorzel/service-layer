@@ -3,7 +3,7 @@ from typing import Any, Dict
 from flask import Blueprint, current_app, jsonify, request
 
 from models import Restaurant
-from service import book_restaurant_table
+from service import book_restaurant_table, get_restaurants
 
 main = Blueprint("main", __name__)
 
@@ -21,7 +21,10 @@ def up():
 @main.route("/restaurants", methods=["GET"])
 def restaurants():
     session = current_app.session
-    restaurants = [restaurant_serializer(r) for r in session.query(Restaurant)]
+    query = get_restaurants(
+        session, search=request.args.get("q"), limit=request.args.get("limit")
+    )
+    restaurants = [restaurant_serializer(r) for r in query]
     return jsonify(restaurants)
 
 
