@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
 
 from models import Restaurant, TableBooking, User
 
@@ -18,7 +18,7 @@ def book_restaurant_table(
 
 def get_restaurants(
     session: Session, search: Optional[str] = None, limit: Optional[int] = None
-):
+) -> Query:
     filter_args = []
     if search:
         filter_args.append(Restaurant.name.ilike(f"%{search}%"))
