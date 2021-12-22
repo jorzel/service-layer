@@ -1,8 +1,7 @@
 import graphene
 from graphene.relay.node import from_global_id
 
-from models import Restaurant
-from service import book_restaurant_table
+from service import book_restaurant_table, get_restaurants
 
 
 class UserNode(graphene.ObjectType):
@@ -57,14 +56,18 @@ class Mutation(graphene.ObjectType):
 
 class Query(graphene.ObjectType):
     up = graphene.Boolean()
-    restaurants = graphene.relay.ConnectionField(RestaurantConnection)
+    restaurants = graphene.relay.ConnectionField(
+        RestaurantConnection, q=graphene.String()
+    )
 
     def resolve_up(root, info, **kwargs):
         return True
 
     def resolve_restaurants(root, info, **kwargs):
-        session = info.context["session"]
-        return [RestaurantNode(id=r.id, name=r.name) for r in session.query(Restaurant)]
+        query = get_restaurants(
+            info.context["session"], search=kwargs.get("q"), limit=kwargs.get("first")
+        )
+        return [RestaurantNode(id=r.id, name=r.name) for r in query]
 
 
 schema = graphene.Schema(

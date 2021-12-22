@@ -52,6 +52,38 @@ def test_resolve_restaurants(test_client, restaurant_factory, db_session):
     assert response["data"] == expected
 
 
+def test_resolve_restaurants_with_paramterized_query(
+    test_client, restaurant_factory, db_session
+):
+    restaurant = restaurant_factory(name="taverna")
+    _ = restaurant_factory(name="americano")
+
+    restaurant_gid = to_global_id("RestaurantNode", restaurant.id)
+
+    query = """
+        {
+            restaurants (q: "tav", first: 1) {
+                edges {
+                    node {
+                        name
+                        id
+                    }
+                }
+            }
+        }
+    """
+
+    response = test_client.execute(query, context_value={"session": db_session})
+    expected = {
+        "restaurants": {
+            "edges": [{"node": {"name": restaurant.name, "id": restaurant_gid}}]
+        }
+    }
+
+    assert response.get("errors") is None
+    assert response["data"] == expected
+
+
 def test_book_table_in_restaurant(
     test_client, restaurant_factory, table_factory, user_factory, db_session
 ):
