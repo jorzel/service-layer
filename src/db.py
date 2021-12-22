@@ -15,4 +15,5 @@ from models import *  # noqa
 
 configure_mappers()
 
+# should be called once or moved to separated script in order to create db tables
 # Base.metadata.create_all(engine)
