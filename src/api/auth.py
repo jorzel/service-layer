@@ -12,8 +12,7 @@ def sign_in_required():
     def decorator(func):
         @wraps(func)
         def wrapper(root, info, *args, **kwargs):
-            print(info.context)
-            _ = get_current_user(info.context)
+            kwargs["current_user"] = get_current_user(info.context)
             return func(root, info, *args, **kwargs)
 
         return wrapper
@@ -26,10 +25,10 @@ def get_current_user(context) -> User:
         token = get_token_from_request(context["request"])
         user = get_user_by_token(context["session"], token)
         if not user:
-            raise UnauthenticatedUser()
+            raise UnauthenticatedUser("UnauthenticatedUser")
         return user
     except KeyError:
-        raise UnauthenticatedUser()
+        raise UnauthenticatedUser("UnauthenticatedUser")
 
 
 def get_token_from_request(request):
