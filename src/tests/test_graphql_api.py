@@ -209,3 +209,43 @@ def test_book_table_in_restaurant(
         .first()
         is not None
     )
+
+
+def test_cancel_table_booking(
+    test_client,
+    restaurant_factory,
+    table_booking_factory,
+    user_factory,
+    db_session,
+    request_factory,
+):
+    restaurant = restaurant_factory(name="taverna")
+    user = user_factory(email="tester@example.pl")
+    table_booking = table_booking_factory(restaurant=restaurant, user=user)
+    table_booking_gid = to_global_id("TableBookingNode", table_booking.id)
+    token = generate_token(user)
+    request = request_factory(headers={"Authorization": f"Bearer {token}"})
+
+    query = """
+        mutation m {
+             cancelTableBooking (tableBookingGid: "%s") {
+                 tableBooking {
+                     isActive
+                     id
+                 }
+             }
+        }
+    """ % (
+        table_booking_gid
+    )
+    response = test_client.execute(
+        query, context_value={"session": db_session, "request": request}
+    )
+    expected = {
+        "cancelTableBooking": {
+            "tableBooking": {"id": table_booking_gid, "isActive": False}
+        }
+    }
+
+    assert response.get("errors") is None
+    assert response["data"] == expected

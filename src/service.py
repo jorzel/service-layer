@@ -14,6 +14,11 @@ class UserAlreadyExist(Exception):
     pass
 
 
+def cancel_table_booking(session: Session, table_booking: TableBooking) -> None:
+    table_booking.cancel()
+    session.commit()
+
+
 def book_restaurant_table(
     session: Session, restaurant_id: int, user_email: str, persons: int
 ) -> TableBooking:
@@ -46,7 +51,7 @@ def sign_up(session: Session, email: str, password) -> User:
     return user
 
 
-def sign_in(session: Session, email: str, password) -> User:
+def sign_in(session: Session, email: str, password) -> str:
     user = session.query(User).filter_by(email=email).first()
     if not user:
         raise UserAuthenticationError()

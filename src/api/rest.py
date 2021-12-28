@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from flask import Blueprint, current_app, jsonify, request
 
-from models import Restaurant
+from models import Restaurant, Table
 from service import book_restaurant_table, get_restaurants
 
 main = Blueprint("main", __name__)
@@ -39,3 +39,16 @@ def bookings():
         persons=payload["persons"],
     )
     return jsonify({"isBooked": True}), 201
+
+
+@main.route("/add", methods=["GET"])
+def add():
+    session = current_app.session
+    restaurant = Restaurant(name="taverna")
+    session.add(restaurant)
+    session.flush()
+    table = Table(max_persons=10, restaurant=restaurant)
+    session.add(table)
+    session.commit()
+
+    return "success"

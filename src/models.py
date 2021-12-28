@@ -63,3 +63,7 @@ class TableBooking(Base):
     restaurant_id = Column(ForeignKey("restaurant.id"), nullable=False)
     restaurant = relationship("Restaurant")
     persons = Column(Integer, nullable=False, default=1)
+    is_active = Column(Boolean, nullable=False, default=True)
+
+    def cancel(self) -> None:
+        self.is_active = False

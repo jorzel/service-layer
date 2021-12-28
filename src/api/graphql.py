@@ -1,9 +1,16 @@
 import graphene
 from graphene.relay.node import from_global_id
 
-from service import book_restaurant_table, get_restaurants, sign_in, sign_up
+from models import TableBooking
+from service import (
+    book_restaurant_table,
+    cancel_table_booking,
+    get_restaurants,
+    sign_in,
+    sign_up,
+)
 
-from .auth import sign_in_required
+from .auth import authorize_required, sign_in_required
 
 
 class UserNode(graphene.ObjectType):
@@ -29,7 +36,7 @@ class TableBookingNode(graphene.ObjectType):
     class Meta:
         interfaces = (graphene.relay.Node,)
 
-    persons = graphene.Int()
+    is_active = graphene.Boolean()
 
 
 class TableBookingConnection(graphene.Connection):
@@ -79,8 +86,28 @@ class BookRestaurantTable(graphene.Mutation):
         return BookRestaurantTable(is_booked=True)
 
 
+class CancelTableBooking(graphene.Mutation):
+    class Arguments:
+        table_booking_gid = graphene.ID(required=True)
+
+    table_booking = graphene.Field(TableBookingNode)
+
+    @authorize_required(TableBooking)
+    def mutate(self, info, table_booking_gid: str, **kwargs):
+        session = info.context["session"]
+        table_booking = kwargs["instance"]
+        cancel_table_booking(session, table_booking)
+        return CancelTableBooking(
+            table_booking=TableBookingNode(
+                id=table_booking.id,
+                is_active=table_booking.is_active,
+            )
+        )
+
+
 class Mutation(graphene.ObjectType):
     book_restaurant_table = BookRestaurantTable.Field()
+    cancel_table_booking = CancelTableBooking.Field()
     sign_in = SignIn.Field()
     sign_up = SignUp.Field()
 

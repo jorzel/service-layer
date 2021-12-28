@@ -9,7 +9,7 @@ from werkzeug import Request
 from app import create_app
 from auth import generate_password_hash
 from db import Base
-from models import Restaurant, Table, User
+from models import Restaurant, Table, TableBooking, User
 
 
 class RequestFactory:
@@ -91,3 +91,14 @@ def user_factory(db_session):
         return user
 
     yield _user_factory
+
+
+@pytest.fixture
+def table_booking_factory(db_session):
+    def _table_booking_factory(restaurant, user):
+        table_booking = TableBooking(restaurant=restaurant, user=user)
+        db_session.add(table_booking)
+        db_session.flush()
+        return table_booking
+
+    yield _table_booking_factory

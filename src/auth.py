@@ -1,14 +1,25 @@
 import hashlib
+from functools import singledispatch
 from typing import Optional
 
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from sqlalchemy.orm import Session
 
-from models import User
+from models import TableBooking, User
 
 SALT = "STRONg@Salt"
 SECRET_KEY = "!SECRET!"
 TOKEN_EXPIRES_IN = 3600 * 24 * 30
+
+
+@singledispatch
+def authorize(instance, current_user: User) -> bool:
+    raise NotImplementedError
+
+
+@authorize.register(TableBooking)
+def _authorize(instance: TableBooking, current_user: User) -> bool:
+    return instance.user_id == current_user.id
 
 
 def generate_password_hash(password: str) -> str:
