@@ -142,7 +142,6 @@ def test_resolve_restaurants_with_paramterized_query(
     user = user_factory(email="test@test.com", password="Test1")
     token = generate_token(user)
     request = request_factory(headers={"Authorization": f"Bearer {token}"})
-
     restaurant_gid = to_global_id("RestaurantNode", restaurant.id)
 
     query = """
@@ -172,26 +171,34 @@ def test_resolve_restaurants_with_paramterized_query(
 
 
 def test_book_table_in_restaurant(
-    test_client, restaurant_factory, table_factory, user_factory, db_session
+    test_client,
+    restaurant_factory,
+    table_factory,
+    user_factory,
+    db_session,
+    request_factory,
 ):
     restaurant = restaurant_factory(name="taverna")
     restaurant_gid = to_global_id("RestaurantNode", restaurant.id)
     _ = table_factory(restaurant=restaurant, max_persons=5, is_open=True)
     user = user_factory(email="tester@example.pl")
+    token = generate_token(user)
+    request = request_factory(headers={"Authorization": f"Bearer {token}"})
     persons = 3
 
     query = """
         mutation m {
-             bookRestaurantTable (restaurantGid: "%s", persons: %s, userEmail: "%s") {
+             bookRestaurantTable (restaurantGid: "%s", persons: %s) {
                  isBooked
              }
         }
     """ % (
         restaurant_gid,
         persons,
-        user.email,
     )
-    response = test_client.execute(query, context_value={"session": db_session})
+    response = test_client.execute(
+        query, context_value={"session": db_session, "request": request}
+    )
     expected = {"bookRestaurantTable": {"isBooked": True}}
 
     assert response.get("errors") is None

@@ -67,14 +67,15 @@ class BookRestaurantTable(graphene.Mutation):
     class Arguments:
         restaurant_gid = graphene.ID(required=True)
         persons = graphene.Int(required=True)
-        user_email = graphene.String(required=True)
 
     is_booked = graphene.Boolean()
 
-    def mutate(self, info, restaurant_gid: str, persons: int, user_email: str):
+    @sign_in_required()
+    def mutate(self, info, restaurant_gid: str, persons: int, **kwargs):
         session = info.context["session"]
+        current_user = kwargs["current_user"]
         _, restaurant_id = from_global_id(restaurant_gid)
-        _ = book_restaurant_table(session, restaurant_id, user_email, persons)
+        _ = book_restaurant_table(session, restaurant_id, current_user.email, persons)
         return BookRestaurantTable(is_booked=True)
 
 
