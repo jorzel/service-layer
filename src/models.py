@@ -16,6 +16,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String, unique=True)
+    password = Column(String)
     table_bookings = relationship("TableBooking")
 
 

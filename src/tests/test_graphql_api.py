@@ -3,12 +3,36 @@ from graphene.relay.node import to_global_id
 from graphene.test import Client
 
 from api.graphql import schema
-from models import TableBooking
+from models import TableBooking, User
 
 
 @pytest.fixture
 def test_client():
     return Client(schema)
+
+
+def test_signup_user(test_client, db_session):
+    email = "newuser@test.com"
+    password = "strongpass!"
+
+    query = """
+        mutation m {
+             signUp (email: "%s", password: "%s") {
+                 user {
+                     email
+                 }
+             }
+        }
+    """ % (
+        email,
+        password,
+    )
+    response = test_client.execute(query, context_value={"session": db_session})
+    expected = {"signUp": {"user": {"email": email}}}
+
+    assert response.get("errors") is None
+    assert response["data"] == expected
+    assert db_session.query(User).filter_by(email=email).first() is not None
 
 
 def test_graphql_up(test_client):

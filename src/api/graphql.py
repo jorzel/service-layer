@@ -1,7 +1,7 @@
 import graphene
 from graphene.relay.node import from_global_id
 
-from service import book_restaurant_table, get_restaurants
+from service import book_restaurant_table, get_restaurants, sign_up
 
 
 class UserNode(graphene.ObjectType):
@@ -35,6 +35,19 @@ class TableBookingConnection(graphene.Connection):
         node = TableBookingNode
 
 
+class SignUp(graphene.Mutation):
+    class Arguments:
+        email = graphene.String(required=True)
+        password = graphene.String(required=True)
+
+    user = graphene.Field(UserNode)
+
+    def mutate(self, info, email: str, password: str):
+        session = info.context["session"]
+        user = sign_up(session, email, password)
+        return SignUp(user=user)
+
+
 class BookRestaurantTable(graphene.Mutation):
     class Arguments:
         restaurant_gid = graphene.ID(required=True)
@@ -52,6 +65,7 @@ class BookRestaurantTable(graphene.Mutation):
 
 class Mutation(graphene.ObjectType):
     book_restaurant_table = BookRestaurantTable.Field()
+    sign_up = SignUp.Field()
 
 
 class Query(graphene.ObjectType):
