@@ -3,7 +3,7 @@ from graphene.relay.node import from_global_id
 
 from service import book_restaurant_table, get_restaurants, sign_in, sign_up
 
-from .auth import get_current_user
+from .auth import get_current_user, sign_in_required
 
 
 class UserNode(graphene.ObjectType):
@@ -94,6 +94,7 @@ class Query(graphene.ObjectType):
     def resolve_up(root, info, **kwargs):
         return True
 
+    @sign_in_required()
     def resolve_restaurants(root, info, **kwargs):
         query = get_restaurants(
             info.context["session"], search=kwargs.get("q"), limit=kwargs.get("first")

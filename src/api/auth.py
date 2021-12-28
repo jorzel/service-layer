@@ -1,9 +1,24 @@
+from functools import wraps
+
 from auth import get_user_by_token
 from models import User
 
 
 class UnauthenticatedUser(Exception):
     pass
+
+
+def sign_in_required():
+    def decorator(func):
+        @wraps(func)
+        def wrapper(root, info, *args, **kwargs):
+            print(info.context)
+            _ = get_current_user(info.context)
+            return func(root, info, *args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 def get_current_user(context) -> User:

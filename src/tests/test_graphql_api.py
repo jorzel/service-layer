@@ -99,9 +99,14 @@ def test_graphql_up(test_client):
     assert response["data"] == expected
 
 
-def test_resolve_restaurants(test_client, restaurant_factory, db_session):
+def test_resolve_restaurants(
+    test_client, restaurant_factory, db_session, user_factory, request_factory
+):
     restaurant = restaurant_factory(name="taverna")
     restaurant_gid = to_global_id("RestaurantNode", restaurant.id)
+    user = user_factory(email="test@test.com", password="Test1")
+    token = generate_token(user)
+    request = request_factory(headers={"Authorization": f"Bearer {token}"})
 
     query = """
         {
@@ -116,7 +121,9 @@ def test_resolve_restaurants(test_client, restaurant_factory, db_session):
         }
     """
 
-    response = test_client.execute(query, context_value={"session": db_session})
+    response = test_client.execute(
+        query, context_value={"session": db_session, "request": request}
+    )
     expected = {
         "restaurants": {
             "edges": [{"node": {"name": restaurant.name, "id": restaurant_gid}}]
@@ -128,10 +135,13 @@ def test_resolve_restaurants(test_client, restaurant_factory, db_session):
 
 
 def test_resolve_restaurants_with_paramterized_query(
-    test_client, restaurant_factory, db_session
+    test_client, restaurant_factory, db_session, user_factory, request_factory
 ):
     restaurant = restaurant_factory(name="taverna")
     _ = restaurant_factory(name="americano")
+    user = user_factory(email="test@test.com", password="Test1")
+    token = generate_token(user)
+    request = request_factory(headers={"Authorization": f"Bearer {token}"})
 
     restaurant_gid = to_global_id("RestaurantNode", restaurant.id)
 
@@ -148,7 +158,9 @@ def test_resolve_restaurants_with_paramterized_query(
         }
     """
 
-    response = test_client.execute(query, context_value={"session": db_session})
+    response = test_client.execute(
+        query, context_value={"session": db_session, "request": request}
+    )
     expected = {
         "restaurants": {
             "edges": [{"node": {"name": restaurant.name, "id": restaurant_gid}}]
