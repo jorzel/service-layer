@@ -1,14 +1,42 @@
+from unittest.mock import ANY
+
 import pytest
 from graphene.relay.node import to_global_id
 from graphene.test import Client
 
 from api.graphql import schema
+from auth import generate_token
 from models import TableBooking, User
 
 
 @pytest.fixture
 def test_client():
     return Client(schema)
+
+
+def test_resolve_me(test_client, user_factory, db_session, request_factory):
+    password = "strongpass!"
+    email = "user@test.com"
+    user = user_factory(email=email, password=password)
+    token = generate_token(user)
+
+    request = request_factory(headers={"Authorization": f"Bearer {token}"})
+
+    query = """
+        {
+            me {
+                email
+            }
+        }
+    """
+
+    response = test_client.execute(
+        query, context_value={"session": db_session, "request": request}
+    )
+    expected = {"me": {"email": user.email}}
+
+    assert response.get("errors") is None
+    assert response["data"] == expected
 
 
 def test_signup_user(test_client, db_session):
@@ -29,6 +57,29 @@ def test_signup_user(test_client, db_session):
     )
     response = test_client.execute(query, context_value={"session": db_session})
     expected = {"signUp": {"user": {"email": email}}}
+
+    assert response.get("errors") is None
+    assert response["data"] == expected
+    assert db_session.query(User).filter_by(email=email).first() is not None
+
+
+def test_signin_user(test_client, db_session, user_factory):
+    password = "strongpass!"
+    email = "user@test.com"
+    _ = user_factory(email=email, password=password)
+
+    query = """
+        mutation m {
+             signIn (email: "%s", password: "%s") {
+                 token
+             }
+        }
+    """ % (
+        email,
+        password,
+    )
+    response = test_client.execute(query, context_value={"session": db_session})
+    expected = {"signIn": {"token": ANY}}
 
     assert response.get("errors") is None
     assert response["data"] == expected

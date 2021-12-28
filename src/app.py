@@ -1,4 +1,4 @@
-from flask import Flask, _app_ctx_stack
+from flask import Flask, _app_ctx_stack, request
 from flask_graphql import GraphQLView
 from sqlalchemy.orm import scoped_session
 
@@ -20,7 +20,7 @@ def create_app():
             "graphql",
             schema=schema,
             graphiql=True,
-            get_context=lambda: {"session": db_session},
+            get_context=lambda: {"session": db_session, "request": request},
         ),
     )
     return app

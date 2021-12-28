@@ -1,10 +1,28 @@
+from typing import Dict, Optional
+from unittest.mock import MagicMock
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from werkzeug import Request
 
 from app import create_app
+from auth import generate_password_hash
 from db import Base
 from models import Restaurant, Table, User
+
+
+class RequestFactory:
+    def __call__(self, method: str = "GET", headers: Optional[Dict] = None) -> Request:
+        request = MagicMock(spec=Request)
+        request.method = method
+        request.headers = headers if headers else {}
+        return request
+
+
+@pytest.fixture
+def request_factory():
+    return RequestFactory()
 
 
 @pytest.fixture(scope="session")
@@ -64,8 +82,10 @@ def table_factory(db_session):
 
 @pytest.fixture
 def user_factory(db_session):
-    def _user_factory(email):
+    def _user_factory(email, password=None):
         user = User(email=email)
+        if password:
+            user.password = generate_password_hash(password)
         db_session.add(user)
         db_session.flush()
         return user

@@ -2,8 +2,12 @@ from typing import Optional
 
 from sqlalchemy.orm import Query, Session
 
-from auth import generate_password_hash
+from auth import generate_password_hash, generate_token, verify_password
 from models import Restaurant, TableBooking, User
+
+
+class UserAuthenticationError(Exception):
+    pass
 
 
 class UserAlreadyExist(Exception):
@@ -40,3 +44,12 @@ def sign_up(session: Session, email: str, password) -> User:
     session.add(user)
     session.commit()
     return user
+
+
+def sign_in(session: Session, email: str, password) -> User:
+    user = session.query(User).filter_by(email=email).first()
+    if not user:
+        raise UserAuthenticationError()
+    if not verify_password(user, password):
+        raise UserAuthenticationError()
+    return generate_token(user)

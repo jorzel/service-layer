@@ -1,7 +1,9 @@
 import graphene
 from graphene.relay.node import from_global_id
 
-from service import book_restaurant_table, get_restaurants, sign_up
+from service import book_restaurant_table, get_restaurants, sign_in, sign_up
+
+from .auth import get_current_user
 
 
 class UserNode(graphene.ObjectType):
@@ -48,6 +50,19 @@ class SignUp(graphene.Mutation):
         return SignUp(user=user)
 
 
+class SignIn(graphene.Mutation):
+    class Arguments:
+        email = graphene.String(required=True)
+        password = graphene.String(required=True)
+
+    token = graphene.String()
+
+    def mutate(self, info, email: str, password: str):
+        session = info.context["session"]
+        token = sign_in(session, email, password)
+        return SignIn(token=token)
+
+
 class BookRestaurantTable(graphene.Mutation):
     class Arguments:
         restaurant_gid = graphene.ID(required=True)
@@ -65,6 +80,7 @@ class BookRestaurantTable(graphene.Mutation):
 
 class Mutation(graphene.ObjectType):
     book_restaurant_table = BookRestaurantTable.Field()
+    sign_in = SignIn.Field()
     sign_up = SignUp.Field()
 
 
@@ -73,6 +89,7 @@ class Query(graphene.ObjectType):
     restaurants = graphene.relay.ConnectionField(
         RestaurantConnection, q=graphene.String()
     )
+    me = graphene.Field(UserNode)
 
     def resolve_up(root, info, **kwargs):
         return True
@@ -82,6 +99,9 @@ class Query(graphene.ObjectType):
             info.context["session"], search=kwargs.get("q"), limit=kwargs.get("first")
         )
         return [RestaurantNode(id=r.id, name=r.name) for r in query]
+
+    def resolve_me(root, info, **kwargs):
+        return get_current_user(info.context)
 
 
 schema = graphene.Schema(
