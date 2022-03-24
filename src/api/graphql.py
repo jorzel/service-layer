@@ -75,15 +75,22 @@ class BookRestaurantTable(graphene.Mutation):
         restaurant_gid = graphene.ID(required=True)
         persons = graphene.Int(required=True)
 
-    is_booked = graphene.Boolean()
+    table_booking = graphene.Field(TableBookingNode)
 
     @sign_in_required()
     def mutate(self, info, restaurant_gid: str, persons: int, **kwargs):
         session = info.context["session"]
         current_user = kwargs["current_user"]
         _, restaurant_id = from_global_id(restaurant_gid)
-        _ = book_restaurant_table(session, restaurant_id, current_user.email, persons)
-        return BookRestaurantTable(is_booked=True)
+        table_booking = book_restaurant_table(
+            session, restaurant_id, current_user.email, persons
+        )
+        return BookRestaurantTable(
+            table_booking=TableBookingNode(
+                id=table_booking.id,
+                is_active=table_booking.is_active,
+            )
+        )
 
 
 class CancelTableBooking(graphene.Mutation):
